@@ -89,4 +89,29 @@ public extension NSPersistentContainer {
         try await container.loadPersistentStores()
         return container
     }
+    
+    static func createSync(
+        name: String,
+        model: NSManagedObjectModel,
+        location: Location
+    ) throws -> NSPersistentContainer {
+        let container: NSPersistentContainer
+        switch location {
+        case .cloud(let cloudContainerIdentifier, let options):
+            container = try model.createCloudContainer(
+                name: name,
+                cloudContainerIdentifier: cloudContainerIdentifier,
+                options: options
+            )
+        case .local(let subdirectory):
+            container = try model.createLocalContainer(name: name, subdirectory: subdirectory)
+        case .inMemory:
+            container = try model.createInMemoryContainer(name: name)
+        }
+        var callback: (desc: NSPersistentStoreDescription?, error: (any Error)?) = (nil, nil)
+        container.loadPersistentStores { callback = ($0, $1) }
+        if let desc = callback.desc { debugPrint("[createSync]", desc) }
+        if let error = callback.error { throw error }
+        return container
+    }
 }
