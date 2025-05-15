@@ -21,6 +21,19 @@ public extension SelfDescribingCoreDataEntity {
         )
     }
 
+    #if swift(>=5.9)
+    // even more than A24...
+    static func description<each A>(
+        _ parameters: repeat EntityDescriptionAttribute<Self, each A>
+    ) -> NSEntityDescription {
+        var properties: [NSPropertyDescription] = []
+        for para in repeat each parameters {
+            properties.append(para.nsPropertyDescription)
+        }
+        return NSEntityDescription(Self.self, properties: properties)
+    }
+    #endif
+
     static func description<A0, A1, A2>(
         _ a0: EntityDescriptionAttribute<Self, A0>,
         _ a1: EntityDescriptionAttribute<Self, A1>,
